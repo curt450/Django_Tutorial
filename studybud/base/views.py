@@ -4,7 +4,7 @@ from .forms import RoomForm
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib import messages
-
+from django.contrib.auth import authenticate, login, logout
 # Create your views here.
 
 
@@ -27,11 +27,22 @@ def loginPage(request):
         except:
             messages.error(request, 'user does not exist')
 
+        user = authenticate(request, username=username, password=password)
 
+        if user is not None: 
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'username or paassword does not exist')
             
     context = {}
-    return render(request, "base/login_register.html," context)
+    return render(request, 'base/login_register.html',  context)
 
+
+
+def logoutUser(request):
+    logout(request)
+    return redirect('home')
 
 
 
@@ -44,7 +55,7 @@ def home(request):
     )
     
 
-    topics = topic.objects.all()
+    topics = Topic.objects.all()
     room_count = rooms.count()
 
     context = {'rooms': rooms, 'topics':topics, 'room_count': room_count}
@@ -58,8 +69,9 @@ def room(request, pk):
 
 
 def createRoom(request):
-    form RoomForm()
-    if request.method == 'POST'
+    form = RoomForm()
+
+    if request.method == 'POST':
         form = RoomForm(request.POST)
         if form.is_valid():
             form.save()
@@ -86,7 +98,7 @@ def updateRoom(request, pk):
 
 def deleteRoom(request, pk):
     room = Room.objects.get(id=pk)
-    if request.method == 'POST'
+    if request.method == 'POST':
         room.delete()
         return redirect('home')
 
